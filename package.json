@@ -1,0 +1,21 @@
+{
+  "name": "coin-flip-solana-example",
+  "version": "1.0.0",
+  "description": "A simple coin flip game using feed protocol random number generator with solana-program rust package and @solana/web3.js package",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node client/main.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.93.2",
+    "borsh": "^0.7.0",
+    "base-58": "^0.0.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  }
+}
