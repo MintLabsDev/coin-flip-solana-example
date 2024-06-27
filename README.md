@@ -36,6 +36,7 @@ Getting account_info from the blockchain
 
 Parsing required data from the account data
 
+
     const current_feeds_account_data = deserialize(CurrentFeedSchema,CurrentFeed,current_feeds_account_info?.data!);
   
     const feed_account_1 = new PublicKey(bs58.encode(current_feeds_account_data.account1).toString());
@@ -59,7 +60,7 @@ We create our instruction, then build it and finally send. Below account are nec
 You can also include the accounts you want to use in your program. 
 However, when you make cpi into rng program the order of these accounts and their properties should be as below
 
-            const ix = new TransactionInstruction({
+    const ix = new TransactionInstruction({
       programId:coin_flip_program,
       keys:[
         {isSigner:true,isWritable:true,pubkey:payer.publicKey},
@@ -90,6 +91,7 @@ However, when you make cpi into rng program the order of these accounts and thei
 
 We get our accounts
 
+
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
 
     let payer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
@@ -103,6 +105,7 @@ We get our accounts
     let system_program: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
 Creating account metas for CPI to RNG_PROGRAM
+
 
     let payer_meta = AccountMeta{ pubkey: *payer.key, is_signer: true, is_writable: true,};
     let price_feed_account_1_meta = AccountMeta{ pubkey: *price_feed_account_1.key, is_signer: false, is_writable: false,};
