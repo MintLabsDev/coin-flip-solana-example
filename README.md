@@ -43,7 +43,6 @@ Parsing required data from the account data
     const feed_account_3 = new PublicKey(bs58.encode(current_feeds_account_data.account3).toString());
     const fallback_account = new PublicKey(bs58.encode(current_feeds_account_data.fallback_account).toString());
   
-    const temp = Keypair.generate();
 
 Generating a keypair to use in RNG program
 

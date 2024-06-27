@@ -18,10 +18,6 @@ import {
 
 const connection= new Connection("https://api.devnet.solana.com","confirmed");
 
-const authority = Keypair.fromSecretKey(Uint8Array.from([153,187,227,210,27,108,215,173,44,244,
-  156,74,194,28,155,122,71,217,19,208,234,242,206,140,90,56,195,207,
-  73,113,207,157,220,189,39,249,130,185,164,194,196,55,144,15,84,36,233,49,66,177,100,45,220,200,
-  12,207,135,110,74,254,221,39,178,75]))
   
   class CurrentFeed{
     is_init:number = 0;
