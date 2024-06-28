@@ -1,18 +1,18 @@
 # coin-flip-solana-example
-A simple coin flip game using feed protocol random number generator with solana-program rust package and @solana/web3.js package
+A simple coin flip game using FEED PROTOCOL RANDOM NUMBER GENERATOR PROGRAM with solana-program rust package and @solana/web3.js package
 
 
-Implementing Feed Protocol RNG to your program is very easy. You derive the needed accounts and pass into the instruction. And then in your program make a CPI to Feed Protocal RNG. 
+Implementing FEED PROTOCOL RANDOM NUMBER GENERATOR PROGRAM (FPRNG) to your program is very easy. You derive the needed accounts and pass into the instruction. And then in your program make a CPI to FPRNG. 
 In these simple example program we will cover every step of the implamaentation.
 Lets say you want to build an on-chain coin flip game. 
 First user chooses heads or tails and send this decision to your coinflip program. 
-Your coin flip program calls Feed Protocol RNG. 
-RNG program return a random number to your program.
+Your coin flip program calls FPRNG. 
+FPRNG return a random number to your program.
 You compare the returned random number with the user's decision in coinflip program.
 Finally coin flip program logs a message according to result.
 THIS ALL HAPPENS IN ONE TRANSACTION.
 You can store the random number in an account in your program.
-You can also try coinflip program on devnet and testnet
+You can also try coinflip program on Devnet and Testnet.
 
 Now lets take a look at how we use Feed Protocol RNG in coinflip game program
 
@@ -20,7 +20,7 @@ Now lets take a look at how we use Feed Protocol RNG in coinflip game program
 
 
 
-Feed Protocol RNG Program address(It is the same address for devnet, testnet and mainnet-beta)
+FPRNG address(It is the same address for devnet, testnet and mainnet-beta)
 
    const rng_program = new PublicKey("9uSwASSU59XvUS8d1UeU8EwrEzMGFdXZvQ4JSEAfcS7k");
 
@@ -45,7 +45,7 @@ Parsing required data from the account data
     const fallback_account = new PublicKey(bs58.encode(current_feeds_account_data.fallback_account).toString());
   
 
-Generating a keypair to use in RNG program
+Generating a keypair to use in FPRNG
 
     const temp = Keypair.generate();
 
@@ -56,9 +56,9 @@ Player's decision(head or tails) is serialized to pass as instruction data.
     const players_decision = new PlayersDecision();
     players_decision.decision = head_or_tails;
         
-We create our instruction, then build it and finally send. Below account are necassary to CPI RNG program. 
+We create our instruction, then build it and finally send. Below account are necassary to CPI FPRNG. 
 You can also include the accounts you want to use in your program. 
-However, when you make cpi into rng program the order of these accounts and their properties should be as below
+However, when you make cpi into FPRNG the order of these accounts and their properties should be as below
 
     const ix = new TransactionInstruction({
       programId:coin_flip_program,
@@ -104,7 +104,7 @@ We get our accounts
     let rng_program: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let system_program: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
-Creating account metas for CPI to RNG_PROGRAM
+Creating account metas for CPI to FPRNG
 
 
     let payer_meta = AccountMeta{ pubkey: *payer.key, is_signer: true, is_writable: true,};
@@ -117,7 +117,7 @@ Creating account metas for CPI to RNG_PROGRAM
     let system_program_meta = AccountMeta{ pubkey: *system_program.key, is_signer: false, is_writable: false,};
 
 
-Creating instruction to cpi RNG PROGRAM
+Creating instruction to cpi FPRNG
 
     let ix:Instruction = Instruction { program_id: *rng_program.key,
        accounts: [
@@ -131,7 +131,7 @@ Creating instruction to cpi RNG PROGRAM
         system_program_meta,
        ].to_vec(), data: [0].to_vec() };
 
-CPI to RNG_PROGRAM
+CPI to FPRNG
 
     invoke(&ix, 
       &[
@@ -153,7 +153,7 @@ Checking players input - zero is head, one is tails
 
     let returned_data:(Pubkey, Vec<u8>)= get_return_data().unwrap();
 
-Random number is returned from the RNG_PROGRAM
+Random number is returned from the FPRNG
 
     let random_number:RandomNumber;
     if &returned_data.0 == rng_program.key{
