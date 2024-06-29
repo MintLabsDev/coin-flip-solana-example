@@ -1,4 +1,4 @@
-# coin-flip-solana-example
+# Coin Flip Solana Example
 A simple coin flip game using FEED PROTOCOL RANDOM NUMBER GENERATOR PROGRAM with solana-program rust package and @solana/web3.js package
 
 
