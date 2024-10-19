@@ -129,7 +129,7 @@ const connection= new Connection("https://api.devnet.solana.com","confirmed");
   ])
 
 
-  const rng_program = new PublicKey("9uSwASSU59XvUS8d1UeU8EwrEzMGFdXZvQ4JSEAfcS7k");
+  const rng_program = new PublicKey("FEED1qspts3SRuoEyG29NMNpsTKX8yG9NGMinNC4GeYB");
   const coin_flip_program = new PublicKey("5uNCDQwxG8dgdFsAYMzb6DS442bLbRp85P2dAn15rt4d");
 
   const play = async (payer:Keypair,head_or_tails:number) => {
