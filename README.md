@@ -91,9 +91,7 @@ However, when you make cpi into FPRNG the order of these accounts and their prop
 
 We get our accounts
 
-
-  let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
-
+    let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
     let payer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let price_feed_account_1: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let price_feed_account_2: &AccountInfo<'_> = next_account_info(accounts_iter)?;
