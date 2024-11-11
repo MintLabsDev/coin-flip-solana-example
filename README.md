@@ -69,12 +69,11 @@ However, when you make cpi into FPRNG the order of these accounts and their prop
 
 We get our accounts
 
-  //credits_account is optional when you call FPRNG program. You don't need to pass into CPI. 
-  //If you call FPRNG program with credits, the program will not charge per request and instead it decrease your credits.
-  //You can take a look at feedprotocol.xyz to get more info about credits 
+    //credits_account is optional when you call FPRNG program. You don't need to pass into CPI. 
+    //If you call FPRNG program with credits, the program will not charge per request and instead it decrease your credits.
+    //You can take a look at feedprotocol.xyz to get more info about credits 
 
-  let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
-
+    let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
     let payer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let entropy_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let fee_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
@@ -91,7 +90,7 @@ Creating account metas for CPI to FPRNG
     let credits_account_meta = AccountMeta{ pubkey: *credits_account.key, is_signer: false, is_writable: true,};
 
 
-Creating instruction to cpi FPRNG
+Creating instruction to CPI FPRNG
 
     let ix:Instruction = Instruction { program_id: *rng_program.key,
        accounts: [
