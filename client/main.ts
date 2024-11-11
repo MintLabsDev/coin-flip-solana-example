@@ -1,185 +1,95 @@
 import {
-    Connection,
-    Keypair,
-    PublicKey,
-    TransactionMessage,
-    VersionedTransaction,
-    SystemProgram,
-    TransactionInstruction,
+  Connection,
+  Keypair,
+  PublicKey,
+  TransactionMessage,
+  VersionedTransaction,
+  SystemProgram,
+  TransactionInstruction,
 
-  } from "@solana/web3.js";
-  
-    import { deserialize,serialize } from "borsh";
-  
+} from "@solana/web3.js";
 
-  
-    var BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    var bs58 = require('base-x')(BASE58);
+  import { serialize } from "borsh";
+
+
+
 
 const connection= new Connection("https://api.devnet.solana.com","confirmed");
 
-  
-  class CurrentFeed{
-    is_init:number = 0;
-    fee:number = 0
-    offset1:number = 0;
-    offset2:number = 0;
-    offset3:number = 0;
-    offset4:number = 0;
-    offset5:number = 0;
-    offset6:number = 0;
-    offset7:number = 0;
-    offset8:number = 0;
-    account1:number[] = Array.from({ length: 32 }, () => 1);
-    account2:number[] = Array.from({ length: 32 }, () => 1);
-    account3:number[] = Array.from({ length: 32 }, () => 1);
-    fallback_account:number[] = Array.from({length: 32}, () => 1);
-    bump:number = 0;
-  
-    constructor(fields: {
-      is_init:number;
-      fee:number;
-      offset1:number;
-      offset2:number;
-      offset3:number;
-      offset4:number;
-      offset5:number;
-      offset6:number;
-      offset7:number;
-      offset8:number;
-      account1:number[];
-      account2:number[];
-      account3:number[];
-      fallback_account:number[];
-       bump:number;
-  
-     } | undefined = undefined)
-      {if (fields) {
-        this.is_init = fields.is_init;
-        this.fee = fields.fee;
-        this.offset1 = fields.offset1;
-        this.offset2 = fields.offset2;
-        this.offset3 = fields.offset3;
-        this.offset4 = fields.offset4;
-        this.offset5 = fields.offset5;
-        this.offset6 = fields.offset6;
-        this.offset7 = fields.offset7;
-        this.offset8 = fields.offset8;
-        this.account1 = fields.account1;
-        this.account2 = fields.account2;
-        this.account3 = fields.account3;
-        this.fallback_account = fields.fallback_account;
-        this.bump = fields.bump;
-      }
+
+
+class PlayersDecision{
+  decision:number = 0;
+
+
+  constructor(fields: {
+      decision:number;
+
+
+   } | undefined = undefined)
+    {if (fields) {
+      this.decision = fields.decision;
+
     }
   }
-  const CurrentFeedSchema =new Map([
-    [
-      CurrentFeed,
-      {
-        kind: "struct",
-        fields: [
-          ["is_init","u8"],
-          ["fee","u64"],
-          ["offset1","u8"],
-          ["offset2","u8"],
-          ["offset3","u8"],
-          ["offset4","u8"],
-          ["offset5","u8"],
-          ["offset6","u8"],
-          ["offset7","u8"],
-          ["offset8","u8"],
-          ["account1",["u8",32]],
-          ["account2",["u8",32]],
-          ["account3",["u8",32]],
-          ["fallback_account",["u8",32]],
-          ["bump","u8"],
-    ],
-  },
+}
+const PlayersDecisionSchema =new Map([
+  [
+    PlayersDecision,
+    {
+      kind: "struct",
+      fields: [
+
+        ["decision","u64"],
+
   ],
-  ])
+},
+],
+])
 
-  class PlayersDecision{
-    decision:number = 0;
 
-  
-    constructor(fields: {
-        decision:number;
+const rng_program = new PublicKey("FEED1qspts3SRuoEyG29NMNpsTKX8yG9NGMinNC4GeYB");
+const coin_flip_program = new PublicKey("5uNCDQwxG8dgdFsAYMzb6DS442bLbRp85P2dAn15rt4d");
 
-  
-     } | undefined = undefined)
-      {if (fields) {
-        this.decision = fields.decision;
+const play = async (payer:Keypair,head_or_tails:number) => {
 
-      }
-    }
-  }
-  const PlayersDecisionSchema =new Map([
-    [
-      PlayersDecision,
-      {
-        kind: "struct",
-        fields: [
+const entropy_account = new PublicKey("CTyyJKQHo6JhtVYBaXcota9NozebV3vHF872S8ag2TUS");
+const fee_account = new PublicKey("WjtcArL5m5peH8ZmAdTtyFF9qjyNxjQ2qp4Gz1YEQdy");
 
-          ["decision","u64"],
- 
+//credits_account is optional when you call FPRNG program. You don't need to pass into CPI. 
+//If you call FPRNG program with credits, the program will not charge per request and instead it decrease your credits.
+//You can take a look at feedprotocol.xyz to get more info about credits 
+const credits_account =  PublicKey.findProgramAddressSync([payer.publicKey.toBytes()],rng_program)[0];
+
+  const players_decision = new PlayersDecision();
+  players_decision.decision = head_or_tails;
+
+  const encoded = serialize(PlayersDecisionSchema,players_decision)
+
+
+  const ix = new TransactionInstruction({
+    programId:coin_flip_program,
+    keys:[
+      {isSigner:true,isWritable:true,pubkey:payer.publicKey},
+      {isSigner:false,isWritable:true,pubkey:entropy_account},
+      {isSigner:false,isWritable:true,pubkey:fee_account},
+      {isSigner:false,isWritable:false,pubkey:rng_program},
+      {isSigner:false,isWritable:false,pubkey:SystemProgram.programId},
+      {isSigner:false,isWritable:true,pubkey:credits_account},
     ],
-  },
-  ],
-  ])
+    data:Buffer.from(encoded)});
 
 
-  const rng_program = new PublicKey("FEED1qspts3SRuoEyG29NMNpsTKX8yG9NGMinNC4GeYB");
-  const coin_flip_program = new PublicKey("5uNCDQwxG8dgdFsAYMzb6DS442bLbRp85P2dAn15rt4d");
+    const message = new TransactionMessage({
+      instructions: [ix],
+        payerKey: payer.publicKey,
+        recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+      }).compileToV0Message();
+  
+      const tx = new VersionedTransaction(message);
+      tx.sign([payer]);
 
-  const play = async (payer:Keypair,head_or_tails:number) => {
+    const sig = await connection.sendTransaction(tx);
+    console.log(sig)
 
-
-    const current_feeds_account =  PublicKey.findProgramAddressSync([Buffer.from("c"),Buffer.from([1])],rng_program);
-    const current_feeds_account_info = await connection.getAccountInfo(current_feeds_account[0]);
-    const current_feeds_account_data = deserialize(CurrentFeedSchema,CurrentFeed,current_feeds_account_info?.data!);
-  
-    const feed_account_1 = new PublicKey(bs58.encode(current_feeds_account_data.account1).toString());
-    const feed_account_2 = new PublicKey(bs58.encode(current_feeds_account_data.account2).toString());
-    const feed_account_3 = new PublicKey(bs58.encode(current_feeds_account_data.account3).toString());
-  
-    const fallback_account = new PublicKey(bs58.encode(current_feeds_account_data.fallback_account).toString());
-  
-    const temp = Keypair.generate();
-  
-
-    const players_decision = new PlayersDecision();
-    players_decision.decision = head_or_tails;
-
-    const encoded = serialize(PlayersDecisionSchema,players_decision)
-  
-  
-    const ix = new TransactionInstruction({
-      programId:coin_flip_program,
-      keys:[
-        {isSigner:true,isWritable:true,pubkey:payer.publicKey},
-        {isSigner:false,isWritable:false,pubkey:feed_account_1},
-        {isSigner:false,isWritable:false,pubkey:feed_account_2},
-        {isSigner:false,isWritable:false,pubkey:feed_account_3},
-        {isSigner:false,isWritable:false,pubkey:fallback_account},
-        {isSigner:false,isWritable:true,pubkey:current_feeds_account[0]},
-        {isSigner:true,isWritable:true,pubkey:temp.publicKey},
-        {isSigner:false,isWritable:false,pubkey:rng_program},
-        {isSigner:false,isWritable:false,pubkey:SystemProgram.programId},
-      ],
-      data:Buffer.from(encoded)});
-  
-  
-      const message = new TransactionMessage({
-        instructions: [ix],
-          payerKey: payer.publicKey,
-          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
-        }).compileToV0Message();
-    
-        const tx = new VersionedTransaction(message);
-        tx.sign([payer,temp]);
-  
-      const sig = await connection.sendTransaction(tx);
-      console.log(sig)
-  
-  }
+}

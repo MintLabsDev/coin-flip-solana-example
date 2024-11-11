@@ -3,7 +3,7 @@ A simple coin flip game using FEED PROTOCOL RANDOM NUMBER GENERATOR PROGRAM with
 
 
 Implementing FEED PROTOCOL RANDOM NUMBER GENERATOR PROGRAM (FPRNG) to your program is very easy. You derive the needed accounts and pass into the instruction. And then in your program make a CPI to FPRNG. 
-In these simple example program we will cover every step of the implamaentation.
+In these simple example program we will cover every step of the implementation.
 Lets say you want to build an on-chain coin flip game. 
 First user chooses heads or tails and send this decision to your coinflip program. 
 Your coin flip program calls FPRNG. 
@@ -20,34 +20,16 @@ Now lets take a look at how we use Feed Protocol RNG in coinflip game program
 
 
 
-FPRNG address(It is the same address for devnet, testnet and mainnet-beta)
+FPRNG addresses(It is the same address for devnet, testnet and mainnet-beta)
 
     const rng_program = new PublicKey("FEED1qspts3SRuoEyG29NMNpsTKX8yG9NGMinNC4GeYB");
+    const entropy_account = new PublicKey.from("CTyyJKQHo6JhtVYBaXcota9NozebV3vHF872S8ag2TUS");
+    const fee_account = new PublicKey.from("WjtcArL5m5peH8ZmAdTtyFF9qjyNxjQ2qp4Gz1YEQdy");
 
-Deriving a PDA that store the required feed accounts
-
-    const current_feeds_account =  PublicKey.findProgramAddressSync([Buffer.from("c"),Buffer.from([1])],rng_program);
-
-
-Getting account_info from the blockchain
-
-    const current_feeds_account_info = await connection.getAccountInfo(current_feeds_account[0]);
-
-
-Parsing required data from the account data
-
-
-    const current_feeds_account_data = deserialize(CurrentFeedSchema,CurrentFeed,current_feeds_account_info?.data!);
-  
-    const feed_account_1 = new PublicKey(bs58.encode(current_feeds_account_data.account1).toString());
-    const feed_account_2 = new PublicKey(bs58.encode(current_feeds_account_data.account2).toString());
-    const feed_account_3 = new PublicKey(bs58.encode(current_feeds_account_data.account3).toString());
-    const fallback_account = new PublicKey(bs58.encode(current_feeds_account_data.fallback_account).toString());
-  
-
-Generating a keypair to use in FPRNG
-
-    const temp = Keypair.generate();
+entropy_account and fee_account are PDAs. You can also derive them as below
+   
+    const entropy_account = PublicKey.findProgramAddressSync([Buffer.from("entropy")],rng_program);
+    const fee_account = PublicKey.findProgramAddressSync([Buffer.from("f")],rng_program);
 
 # Creating Instruction
 
@@ -64,12 +46,8 @@ However, when you make cpi into FPRNG the order of these accounts and their prop
       programId:coin_flip_program,
       keys:[
         {isSigner:true,isWritable:true,pubkey:payer.publicKey},
-        {isSigner:false,isWritable:false,pubkey:feed_account_1},
-        {isSigner:false,isWritable:false,pubkey:feed_account_2},
-        {isSigner:false,isWritable:false,pubkey:feed_account_3},
-        {isSigner:false,isWritable:false,pubkey:fallback_account},
-        {isSigner:false,isWritable:true,pubkey:current_feeds_account[0]},
-        {isSigner:true,isWritable:true,pubkey:temp.publicKey},
+        {isSigner:false,isWritable:true,pubkey:entropy_account},
+        {isSigner:false,isWritable:true,pubkey:fee_account},
         {isSigner:false,isWritable:false,pubkey:rng_program},
         {isSigner:false,isWritable:false,pubkey:SystemProgram.programId},
       ],
@@ -91,28 +69,26 @@ However, when you make cpi into FPRNG the order of these accounts and their prop
 
 We get our accounts
 
-    let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
+  //credits_account is optional when you call FPRNG program. You don't need to pass into CPI. 
+  //If you call FPRNG program with credits, the program will not charge per request and instead it decrease your credits.
+  //You can take a look at feedprotocol.xyz to get more info about credits 
+
+  let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
+
     let payer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-    let price_feed_account_1: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-    let price_feed_account_2: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-    let price_feed_account_3: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-    let fallback_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-    let current_feed_accounts: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-    let temp: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+    let entropy_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+    let fee_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let rng_program: &AccountInfo<'_> = next_account_info(accounts_iter)?;
     let system_program: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+    let credits_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
 Creating account metas for CPI to FPRNG
 
-
     let payer_meta = AccountMeta{ pubkey: *payer.key, is_signer: true, is_writable: true,};
-    let price_feed_account_1_meta = AccountMeta{ pubkey: *price_feed_account_1.key, is_signer: false, is_writable: false,};
-    let price_feed_account_2_meta = AccountMeta{ pubkey: *price_feed_account_2.key, is_signer: false, is_writable: false,};
-    let price_feed_account_3_meta = AccountMeta{ pubkey: *price_feed_account_3.key, is_signer: false, is_writable: false,};
-    let fallback_account_meta = AccountMeta{ pubkey: *fallback_account.key, is_signer: false, is_writable: false,};
-    let current_feed_accounts_meta = AccountMeta{ pubkey: *current_feed_accounts.key, is_signer: false, is_writable: true,};
-    let temp_meta = AccountMeta{ pubkey: *temp.key, is_signer: true, is_writable: true,};
+    let entropy_account_meta = AccountMeta{ pubkey: *entropy_account.key, is_signer: false, is_writable: true,};
+    let fee_account_meta = AccountMeta{ pubkey: *fee_account.key, is_signer: false, is_writable: true,};
     let system_program_meta = AccountMeta{ pubkey: *system_program.key, is_signer: false, is_writable: false,};
+    let credits_account_meta = AccountMeta{ pubkey: *credits_account.key, is_signer: false, is_writable: true,};
 
 
 Creating instruction to cpi FPRNG
@@ -120,27 +96,21 @@ Creating instruction to cpi FPRNG
     let ix:Instruction = Instruction { program_id: *rng_program.key,
        accounts: [
         payer_meta,
-        price_feed_account_1_meta,
-        price_feed_account_2_meta,
-        price_feed_account_3_meta,
-        fallback_account_meta,
-        current_feed_accounts_meta,
-        temp_meta,
+        entropy_account_meta,
+        fee_account_meta,
         system_program_meta,
-       ].to_vec(), data: [0].to_vec() };
+        credits_account_meta,
+       ].to_vec(), data: [100].to_vec() };
 
 CPI to FPRNG
 
     invoke(&ix, 
       &[
         payer.clone(),
-        price_feed_account_1.clone(),
-        price_feed_account_2.clone(),
-        price_feed_account_3.clone(),
-        fallback_account.clone(),
-        current_feed_accounts.clone(),
-        temp.clone(),
+        entropy_account.clone(),
+        fee_account.clone(),
         system_program.clone()
+        credits_account.clone()
         ])?;
 
 Checking players input - zero is head, one is tails
